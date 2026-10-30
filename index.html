@@ -8,7 +8,7 @@
 </head>
 <body>
 <dialog id="opening" aria-labelledby="opening-title" aria-describedby="opening-copy">
-  <button id="skip-opening" class="opening-skip" autofocus>跳过动画 ↗</button>
+  <button id="skip-opening" class="opening-skip">先去树洞 ↗</button>
   <div class="opening-dust" aria-hidden="true"></div>
   <div class="opening-content">
     <span class="opening-eyebrow">A LITTLE UNIVERSE, JUST FOR YOU</span>
@@ -22,18 +22,59 @@
       <g class="opening-bubbles" fill="none" stroke="#a9ccdd"><circle cx="198" cy="152" r="4"/><circle cx="209" cy="133" r="3"/><circle cx="217" cy="114" r="2"/></g>
       <g fill="#d9b96b"><path class="opening-twinkle" d="m111 73 3 9 9 3-9 3-3 9-3-9-9-3 9-3Z"/><path class="opening-twinkle" d="m338 143 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/></g>
     </svg>
-    <h1 id="opening-title">游过一片海，<br>遇见属于你的星光。</h1>
-    <p id="opening-copy">小鱼与星星，正在为你打开树洞。</p>
+    <h1 id="opening-title">给小鱼的一封生日信</h1>
+    <div class="letter-page"><p id="opening-copy" aria-live="polite" aria-atomic="true"></p></div>
+    <div class="letter-navigation"><button id="letter-prev" aria-label="上一句">← 上一句</button><span id="letter-count" aria-label="阅读进度"></span><button id="letter-next" autofocus>下一句 →</button></div>
     <div class="opening-progress" aria-hidden="true"><span></span></div>
-    <span class="opening-dedication">愿你每一种心情，都被温柔接住</span>
+    <span class="opening-dedication">不着急，我们一句一句慢慢读</span>
   </div>
 </dialog>
+<template id="birthday-letter">生日快乐呀小鱼！
+很高兴能来见证你的生日，写信的时候我一个人待在家里，所想的是你看到信一定要开心和幸福。
+对你的第一印象是一个勇敢的姑娘，你是那个冬天里火堆一样的人，你总是大胆的，后来震惊于你的高精力，小小的一个人怎么能做这么多的事情，再后来只觉得你很厉害，你的勇气和自由都诞生于自己的手中。
+你问过我好多次会不会对你的恋爱情况感到厌烦，你总是向我寻求答案，但我并不是完全正确的
+你总是容易过多的付出，却缺少筛选，但喜欢并不是痴，也不是傻，太阳本身没有错，你是炽热的火堆，会给每一个人带来温暖，但请不要过多的燃烧自己，无论是火种还是木柴，都是你此后夜行的勇气，你的情感也格外珍贵，我们在浩大的人海里相遇，人和人的命运短暂的交织在一起，从而在无数个交点里面获得温暖和爱，但这样的情感并不完全出自别人，有时候它也出自于你自身，在你身体里住着一个闪闪发光的星星，它爱你，想要你赢，获胜，快乐。
+你比我们更早的拥有自由，也意味着你经历的更多，你的天真更少，也请你多爱自己，更多的保护这些珍贵的天真。
+虽然我们认识的时间并不长，曾经有一天我在想，在四年之后，我们失去共同的环境和目标奔赴天南海北的时候，仍然能留下来的朋友是谁呢？我想应该是你。
+你的出现让我觉得幸运，命运就这样一次一次把好的人送到我身边。
+这两天天气很冷，要多穿衣服不要生病，再过段时间可能会下雪，雪和阳光一样漂亮。而人生每一个阶段都正如此，好与坏最终都会变成风景，无论过去，未来，现在。
+谢谢你细腻的心，谢谢你的珍惜和热情。
+我永远祝福你，祝你在任何关系里都能被尊重，被支持，被爱，拥有希望，自由和无尽幸福的未来。
+亲爱的朋友，人生永远柳暗花明。</template>
 <script>
 (() => {
   const opening = document.getElementById('opening');
   if (typeof opening.showModal !== 'function') return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pages = [];
+  const source = document.getElementById('birthday-letter').content.textContent.trim();
+  for (const paragraph of source.split(/\n+/)) {
+    let line = '';
+    for (const clause of paragraph.match(/[^，。！？]+[，。！？]?/g) || []) {
+      if (line && line.length + clause.length > 58) { pages.push(line); line = ''; }
+      line += clause;
+      if (/[。！？]$/.test(clause)) { pages.push(line); line = ''; }
+    }
+    if (line) pages.push(line);
+  }
+  let page = 0;
   let closing = false;
+  const copy = document.getElementById('opening-copy');
+  const next = document.getElementById('letter-next');
+  const previous = document.getElementById('letter-prev');
+  function renderLine() {
+    copy.textContent = pages[page];
+    copy.classList.remove('letter-appear');
+    void copy.offsetWidth;
+    copy.classList.add('letter-appear');
+    document.querySelector('.letter-page').scrollTop = 0;
+    document.getElementById('letter-count').textContent = `${page + 1} / ${pages.length}`;
+    previous.disabled = page === 0;
+    next.textContent = page === pages.length - 1 ? '带着祝福，进入树洞 ✦' : '下一句 →';
+    document.querySelector('.opening-progress span').style.transform = `scaleX(${(page + 1) / pages.length})`;
+  }
+  next.addEventListener('click', () => { if (page < pages.length - 1) { page++; renderLine(); } else finish(); });
+  previous.addEventListener('click', () => { if (page > 0) { page--; renderLine(); } });
   function finish() {
     if (closing) return;
     closing = true;
@@ -50,8 +91,19 @@
     document.querySelector('.opening-dust').append(dot);
   }
   document.documentElement.classList.add('opening-active');
+  renderLine();
   opening.showModal();
-  window.setTimeout(finish, reduced ? 900 : 3600);
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('reread-letter').addEventListener('click', () => {
+      document.getElementById('birthday-dialog').close();
+      page = 0;
+      closing = false;
+      opening.classList.remove('opening-leave');
+      renderLine();
+      document.documentElement.classList.add('opening-active');
+      opening.showModal();
+    });
+  });
 })();
 </script>
 <canvas id="particles" aria-hidden="true"></canvas>
@@ -75,7 +127,7 @@
 </main>
 <main id="diary" class="page hidden"><div class="diary-heading"><div><div class="eyebrow"><span></span> EVERY FEELING DESERVES A PAGE</div><h1>被好好收藏的<span class="handwritten">日子</span>。</h1><p>晴天和雨天，都是你认真生活的痕迹。</p></div><button id="write-diary" class="primary">＋ 写下今天</button></div><div class="diary-toolbar"><label class="search"><span>⌕</span><input id="search" placeholder="找一找某一天的心事…" aria-label="搜索日记"></label><div><button id="import" class="outline">导入日记</button><button id="export" class="outline">导出备份 ↗</button></div><input id="import-file" type="file" accept="application/json,.json" hidden></div><p class="diary-hint">自动收好每段对话 · 数据存在当前浏览器，换设备前记得导出备份</p><div id="diary-list"></div></main>
 <footer><span>鱼星之间 <i>✦</i> 愿你被这个世界温柔以待</span><div><button id="particle-toggle" aria-pressed="true">✧ 星尘已开启</button><button id="birthday-footer">HAPPY BIRTHDAY TO YOU ↗</button></div></footer>
-<dialog id="birthday-dialog"><button class="close" data-close aria-label="关闭">×</button><div class="birthday-art">✧ <span>𓆝</span> ✦</div><span class="mini-label">A LITTLE UNIVERSE, JUST FOR YOU</span><h2>生日快乐，<span id="birthday-name">亲爱的你</span>。</h2><p>送你一小片海，和一整片星光。<br>愿你新的一岁，有勇气，也有被接住的底气。<br><br>开心的时候，来这里留一颗星星；<br>难过的时候，小鱼会陪你慢慢游。<br>这里永远给你留着位置。</p><button id="make-wish" class="primary">许个愿，让星星听见 ✦</button><label class="name-label">这份礼物属于<input id="name-input" maxlength="20" placeholder="写下你的昵称"></label><small>昵称只保存在当前浏览器</small></dialog>
+<dialog id="birthday-dialog"><button class="close" data-close aria-label="关闭">×</button><div class="birthday-art">✧ <span>𓆝</span> ✦</div><span class="mini-label">A LITTLE UNIVERSE, JUST FOR YOU</span><h2>生日快乐，<span id="birthday-name">亲爱的你</span>。</h2><p>送你一小片海，和一整片星光。<br>愿你新的一岁，有勇气，也有被接住的底气。<br><br>开心的时候，来这里留一颗星星；<br>难过的时候，小鱼会陪你慢慢游。<br>这里永远给你留着位置。</p><button id="make-wish" class="primary">许个愿，让星星听见 ✦</button><button id="reread-letter" class="outline">再读一次生日信 ↗</button><label class="name-label">这份礼物属于<input id="name-input" maxlength="20" placeholder="写下你的昵称"></label><small>昵称只保存在当前浏览器</small></dialog>
 <dialog id="entry-dialog"><button class="close" data-close aria-label="关闭">×</button><div id="entry-content"></div><button id="delete-entry" class="delete">删除这篇日记</button><div id="delete-confirm" class="hidden"><p>确定删除这篇日记吗？删除后无法恢复。</p><button id="confirm-delete" class="delete">确定删除</button><button id="cancel-delete" class="outline">保留日记</button></div></dialog>
 <div id="toast" role="status"></div><script src="./app.js"></script>
 </body></html>
