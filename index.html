@@ -9,22 +9,11 @@
 <body>
 <dialog id="opening" aria-labelledby="opening-title" aria-describedby="opening-copy letter-instructions" tabindex="-1">
   <button id="skip-opening" class="opening-skip">先去树洞 ↗</button>
-  <div class="opening-dust" aria-hidden="true"></div>
+  <canvas id="opening-ocean" aria-hidden="true"></canvas>
   <div class="opening-content">
-    <span class="opening-eyebrow">A LITTLE UNIVERSE, JUST FOR YOU</span>
-    <svg class="opening-scene" viewBox="0 0 420 260" aria-hidden="true">
-      <defs><radialGradient id="opening-glow"><stop stop-color="#ffe7a1" stop-opacity=".8"/><stop offset="1" stop-color="#ffe7a1" stop-opacity="0"/></radialGradient></defs>
-      <circle class="opening-halo" cx="272" cy="84" r="75" fill="url(#opening-glow)"/>
-      <path class="opening-water" d="M-40 185 Q25 164 90 185 T220 185 T350 185 T480 185 V280 H-40Z" fill="#d9ecf4"/>
-      <path d="M0 202 Q50 188 100 202 T200 202 T300 202 T420 202" fill="none" stroke="#b7d8e7" stroke-width="1.5"/>
-      <g class="opening-star"><path d="m272 48 12 23 26 4-19 19 5 26-24-12-24 12 5-26-19-19 26-4Z" fill="#f3d37c" stroke="#dec06f" stroke-linejoin="round"/><circle cx="264" cy="87" r="2" fill="#978252"/><circle cx="280" cy="87" r="2" fill="#978252"/><path d="M268 94q4 5 8 0" fill="none" stroke="#978252" stroke-linecap="round"/></g>
-      <g class="opening-fish"><path d="M125 169q-19-16-34-10 7 15 0 29 17 3 34-10" fill="#e9d99f" stroke="#cdbc82"/><ellipse cx="148" cy="173" rx="34" ry="20" fill="#fffae7" stroke="#cdbc82"/><path d="m142 173 9-2-3 9Z" fill="#e8d59a"/><circle cx="169" cy="169" r="2.5" fill="#637a7d"/><ellipse cx="166" cy="178" rx="5" ry="2.5" fill="#ecc5b2"/></g>
-      <g class="opening-bubbles" fill="none" stroke="#a9ccdd"><circle cx="198" cy="152" r="4"/><circle cx="209" cy="133" r="3"/><circle cx="217" cy="114" r="2"/></g>
-      <g fill="#d9b96b"><path class="opening-twinkle" d="m111 73 3 9 9 3-9 3-3 9-3-9-9-3 9-3Z"/><path class="opening-twinkle" d="m338 143 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/></g>
-    </svg>
-    <h1 id="opening-title">给小鱼的一封生日信</h1>
+    <h1 id="opening-title" class="sr-only">给小鱼的一封生日信</h1>
     <div class="letter-page"><p id="opening-copy" aria-live="polite" aria-atomic="true"></p></div>
-    <span id="letter-instructions" class="sr-only">轻点空白处，或按空格、回车、右方向键阅读下一句；最后一句之后进入树洞。左方向键可回看。</span>
+    <span id="letter-instructions" class="sr-only">轻点空白处阅读下一句；读完后再次轻点，播放海洋动画。左方向键可回看，空格或回车也可继续。</span>
   </div>
 </dialog>
 <template id="birthday-letter">生日快乐呀小鱼！
@@ -39,89 +28,7 @@
 谢谢你细腻的心，谢谢你的珍惜和热情。
 我永远祝福你，祝你在任何关系里都能被尊重，被支持，被爱，拥有希望，自由和无尽幸福的未来。
 亲爱的朋友，人生永远柳暗花明。</template>
-<script>
-(() => {
-  const opening = document.getElementById('opening');
-  if (typeof opening.showModal !== 'function') return;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const pages = [];
-  const source = document.getElementById('birthday-letter').content.textContent.trim();
-  for (const paragraph of source.split(/\n+/)) {
-    let line = '';
-    for (const clause of paragraph.match(/[^，。！？]+[，。！？]?/g) || []) {
-      if (line && line.length + clause.length > 58) { pages.push(line); line = ''; }
-      line += clause;
-      if (/[。！？]$/.test(clause)) { pages.push(line); line = ''; }
-    }
-    if (line) pages.push(line);
-  }
-  let page = 0;
-  let closing = false;
-  const copy = document.getElementById('opening-copy');
-  function renderLine() {
-    copy.textContent = pages[page];
-    copy.classList.remove('letter-appear');
-    void copy.offsetWidth;
-    copy.classList.add('letter-appear');
-    document.querySelector('.letter-page').scrollTop = 0;
-  }
-  function advance() {
-    if (closing) return;
-    if (page < pages.length - 1) { page++; renderLine(); } else finish();
-  }
-  let pointerStart = null;
-  let dragged = false;
-  opening.addEventListener('pointerdown', event => {
-    pointerStart = { x: event.clientX, y: event.clientY };
-    dragged = false;
-  });
-  opening.addEventListener('pointermove', event => {
-    if (pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 10) dragged = true;
-  });
-  opening.addEventListener('pointercancel', () => { dragged = true; pointerStart = null; });
-  opening.addEventListener('click', event => {
-    if (dragged || event.target.closest('button, a, input, textarea, #opening-copy, #opening-title, .opening-eyebrow, .opening-scene')) return;
-    if (!window.getSelection().isCollapsed) return;
-    advance();
-  });
-  opening.addEventListener('keydown', event => {
-    if (event.target.closest('button') || event.repeat) return;
-    if ([' ', 'Enter', 'ArrowRight'].includes(event.key)) { event.preventDefault(); advance(); }
-    else if (event.key === 'ArrowLeft' && page > 0 && !closing) { event.preventDefault(); page--; renderLine(); }
-  });
-  function finish() {
-    if (closing) return;
-    closing = true;
-    opening.classList.add('opening-leave');
-    document.documentElement.classList.remove('opening-active');
-    window.setTimeout(() => opening.close(), reduced ? 0 : 500);
-  }
-  document.querySelector('#skip-opening').addEventListener('click', finish);
-  opening.addEventListener('cancel', event => { event.preventDefault(); finish(); });
-  opening.addEventListener('close', () => document.documentElement.classList.remove('opening-active'));
-  for (let i = 0; i < 26; i++) {
-    const dot = document.createElement('i');
-    dot.style.cssText = `--x:${(i * 37 + 13) % 100}%;--y:${(i * 23 + 9) % 100}%;--delay:${i % 7 * .18}s;--drift:${i % 2 ? 18 : -18}px`;
-    document.querySelector('.opening-dust').append(dot);
-  }
-  document.documentElement.classList.add('opening-active');
-  renderLine();
-  opening.showModal();
-  opening.focus({ preventScroll: true });
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('reread-letter').addEventListener('click', () => {
-      document.getElementById('birthday-dialog').close();
-      page = 0;
-      closing = false;
-      opening.classList.remove('opening-leave');
-      renderLine();
-      document.documentElement.classList.add('opening-active');
-      opening.showModal();
-      opening.focus({ preventScroll: true });
-    });
-  });
-})();
-</script>
+<script src="./opening.js"></script>
 <canvas id="particles" aria-hidden="true"></canvas>
 <header class="header"><a class="brand" href="#home" aria-label="鱼星之间首页"><span class="brand-mark">𓆝<span>✦</span></span><span>鱼星之间<small>A LITTLE PLACE FOR YOU</small></span></a><nav aria-label="主导航"><button class="nav active" data-page="home">我的树洞</button><button class="nav" data-page="diary">心情日记 <span id="diary-count">0</span></button></nav><button id="gift" class="gift-button" aria-label="打开生日礼物">✧ <span>一份给你的礼物</span></button></header>
 <main id="home" class="page">
