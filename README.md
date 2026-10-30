@@ -1,0 +1,32 @@
+# 鱼星之间
+
+一个浅蓝与暖黄色的生日树洞。送你一小片海，和一整片星光。
+
+## 体验
+
+- 小鱼与星星双伙伴，按话题提供本地预设陪伴回应（未接入 AI）。
+- 对话自动记为日记，可按内容或日期搜索、翻阅、删除。
+- 四种心情标记；支持 JSON 日记备份导出和合并导入。
+- 原生 Canvas 星尘，指针避让、点击星光爆散、生日许愿粒子。
+- SVG 小鱼与星星动画，可点击切换伙伴。
+- 生日祝福卡与本地昵称，适配手机，支持减少动态效果偏好。
+
+## 数据与隐私
+
+日记仅存储于当前设备当前浏览器的 localStorage，不会提交到 GitHub，也不会同步到其他设备。清除浏览器数据会丢失日记，建议定期导出备份。公开网址并不提供日记账户或密码锁：使用同一浏览器的人可以查看日记。备份文件包含对话内容，请妥善保管。字体可从 Google Fonts 加载，加载失败时使用系统字体。除字体外，页面不需要任何外部服务。
+
+## 本地运行
+
+直接打开 `index.html` 可预览。建议通过静态 HTTP 服务访问，以获得稳定一致的浏览器存储行为，例如在本目录运行 `python -m http.server 8080`，然后访问 `http://localhost:8080`。无需安装或构建。
+
+## GitHub Pages
+
+仓库：<https://github.com/wenshuchuan0101-lab/yuxing>
+
+1. 将这些文件推送到仓库 `main` 分支。
+2. 打开仓库 **Settings → Pages → Build and deployment → Source**，选择 **GitHub Actions**。
+3. Actions 中的部署工作流成功后，访问 <https://wenshuchuan0101-lab.github.io/yuxing/>。
+
+`.github/workflows/pages.yml` 自动发布四个网页资源和 `.nojekyll`，不发布 README、测试文件或个人日记。
+
+如需接入真实 AI，需另行部署服务端保存密钥；不要把 API 密钥写入静态网页或公开仓库。
