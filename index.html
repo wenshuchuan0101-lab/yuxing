@@ -7,7 +7,7 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<dialog id="opening" aria-labelledby="opening-title" aria-describedby="opening-copy">
+<dialog id="opening" aria-labelledby="opening-title" aria-describedby="opening-copy letter-instructions" tabindex="-1">
   <button id="skip-opening" class="opening-skip">先去树洞 ↗</button>
   <div class="opening-dust" aria-hidden="true"></div>
   <div class="opening-content">
@@ -24,9 +24,7 @@
     </svg>
     <h1 id="opening-title">给小鱼的一封生日信</h1>
     <div class="letter-page"><p id="opening-copy" aria-live="polite" aria-atomic="true"></p></div>
-    <div class="letter-navigation"><button id="letter-prev" aria-label="上一句">← 上一句</button><span id="letter-count" aria-label="阅读进度"></span><button id="letter-next" autofocus>下一句 →</button></div>
-    <div class="opening-progress" aria-hidden="true"><span></span></div>
-    <span class="opening-dedication">不着急，我们一句一句慢慢读</span>
+    <span id="letter-instructions" class="sr-only">轻点空白处，或按空格、回车、右方向键阅读下一句；最后一句之后进入树洞。左方向键可回看。</span>
   </div>
 </dialog>
 <template id="birthday-letter">生日快乐呀小鱼！
@@ -60,21 +58,37 @@
   let page = 0;
   let closing = false;
   const copy = document.getElementById('opening-copy');
-  const next = document.getElementById('letter-next');
-  const previous = document.getElementById('letter-prev');
   function renderLine() {
     copy.textContent = pages[page];
     copy.classList.remove('letter-appear');
     void copy.offsetWidth;
     copy.classList.add('letter-appear');
     document.querySelector('.letter-page').scrollTop = 0;
-    document.getElementById('letter-count').textContent = `${page + 1} / ${pages.length}`;
-    previous.disabled = page === 0;
-    next.textContent = page === pages.length - 1 ? '带着祝福，进入树洞 ✦' : '下一句 →';
-    document.querySelector('.opening-progress span').style.transform = `scaleX(${(page + 1) / pages.length})`;
   }
-  next.addEventListener('click', () => { if (page < pages.length - 1) { page++; renderLine(); } else finish(); });
-  previous.addEventListener('click', () => { if (page > 0) { page--; renderLine(); } });
+  function advance() {
+    if (closing) return;
+    if (page < pages.length - 1) { page++; renderLine(); } else finish();
+  }
+  let pointerStart = null;
+  let dragged = false;
+  opening.addEventListener('pointerdown', event => {
+    pointerStart = { x: event.clientX, y: event.clientY };
+    dragged = false;
+  });
+  opening.addEventListener('pointermove', event => {
+    if (pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 10) dragged = true;
+  });
+  opening.addEventListener('pointercancel', () => { dragged = true; pointerStart = null; });
+  opening.addEventListener('click', event => {
+    if (dragged || event.target.closest('button, a, input, textarea, #opening-copy, #opening-title, .opening-eyebrow, .opening-scene')) return;
+    if (!window.getSelection().isCollapsed) return;
+    advance();
+  });
+  opening.addEventListener('keydown', event => {
+    if (event.target.closest('button') || event.repeat) return;
+    if ([' ', 'Enter', 'ArrowRight'].includes(event.key)) { event.preventDefault(); advance(); }
+    else if (event.key === 'ArrowLeft' && page > 0 && !closing) { event.preventDefault(); page--; renderLine(); }
+  });
   function finish() {
     if (closing) return;
     closing = true;
@@ -93,6 +107,7 @@
   document.documentElement.classList.add('opening-active');
   renderLine();
   opening.showModal();
+  opening.focus({ preventScroll: true });
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reread-letter').addEventListener('click', () => {
       document.getElementById('birthday-dialog').close();
@@ -102,6 +117,7 @@
       renderLine();
       document.documentElement.classList.add('opening-active');
       opening.showModal();
+      opening.focus({ preventScroll: true });
     });
   });
 })();

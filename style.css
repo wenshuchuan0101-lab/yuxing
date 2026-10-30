@@ -56,14 +56,8 @@
 .letter-page{width:100%;max-width:590px;min-height:145px;max-height:32dvh;overflow-y:auto;display:flex;align-items:safe center;justify-content:center;padding:0 14px;scrollbar-width:thin;scrollbar-color:#d4e2e8 transparent}
 #opening #opening-copy{font-family:'Noto Serif SC','SimSun',serif;color:#46687d;font-size:23px;line-height:2.05;letter-spacing:1.5px;margin:0;animation:none;overflow-wrap:anywhere}
 #opening #opening-copy.letter-appear{animation:letter-in .55s ease both}
-.letter-navigation{display:flex;align-items:center;justify-content:space-between;gap:18px;width:min(440px,100%);padding:0 12px;margin-top:28px;flex-shrink:0}
-.letter-navigation button{min-height:46px;font-size:12px;white-space:nowrap;padding:10px 8px;touch-action:manipulation}
-#letter-prev{color:#8aa1ae}#letter-prev:disabled{opacity:.3;cursor:default;transform:none}
-#letter-next{color:#557e95;border-bottom:1px solid #c5b370}
-#letter-count{font-size:10px;letter-spacing:2px;color:#a6b4ba;white-space:nowrap}
-#opening .opening-progress{width:min(400px,80%);margin:20px 0 16px;flex-shrink:0}
-#opening .opening-progress span{animation:none;transition:transform .4s ease}
-#opening .opening-dedication{animation:none}
+#opening{touch-action:pan-y}
+#opening:focus{outline:none}
 #birthday-dialog #reread-letter{display:block;margin:0 auto 20px}
 @keyframes letter-in{from{opacity:0;transform:translateY(9px);filter:blur(2px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
 @media(max-width:760px){#opening #opening-copy{font-size:19px;line-height:2;letter-spacing:1px}.letter-page{min-height:160px;max-height:34dvh;padding:0 8px}#opening h1{font-size:12px;margin-bottom:20px}.letter-navigation{gap:8px;margin-top:23px;padding:0}.letter-navigation button{font-size:11px}#letter-count{font-size:9px;letter-spacing:1px}#opening .opening-dedication{font-size:9px}}
